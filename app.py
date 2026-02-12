@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+import os
 
 # ============================================================
 # CONFIGURACAO DA PAGINA (deve ser o primeiro comando Streamlit)
@@ -304,7 +305,19 @@ CATEGORY_ICONS = {
 def process_data(file):
     """Carrega e processa o arquivo de dados."""
     try:
-        if file.name.endswith('.csv'):
+        # Se for um caminho de arquivo (string), carrega direto do disco
+        if isinstance(file, str):
+            if file.endswith('.csv'):
+                try:
+                    df = pd.read_csv(file, sep=';', decimal=',')
+                    if len(df.columns) <= 1:
+                        df = pd.read_csv(file)
+                except Exception:
+                    df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+        # Se for upload do Streamlit
+        elif file.name.endswith('.csv'):
             try:
                 df = pd.read_csv(file, sep=';', decimal=',')
                 if len(df.columns) <= 1:
@@ -417,15 +430,29 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # Upload
-    st.markdown("##### 📂 Dados de Vendas")
-    uploaded_file = st.file_uploader(
-        "Arraste seu arquivo aqui",
-        type=["csv", "xlsx"],
-        help="Aceita CSV ou Excel com colunas: Produto, Receita_Bruta, CMV, Qtde_Vendida, Margem_Bruta"
-    )
+    # Detectar arquivo de dados local
+    SAMPLE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "DadosVendas.csv")
+    has_local_file = os.path.exists(SAMPLE_FILE)
 
-    if uploaded_file is not None:
+    # Upload ou dados automaticos
+    st.markdown("##### 📂 Dados de Vendas")
+
+    if has_local_file:
+        st.success("✅ Dados carregados automaticamente!")
+        st.caption("Arquivo: DadosVendas.csv")
+        uploaded_file = None  # nao precisa de upload
+        use_local = True
+    else:
+        use_local = False
+        uploaded_file = st.file_uploader(
+            "Arraste seu arquivo aqui",
+            type=["csv", "xlsx"],
+            help="Aceita CSV ou Excel com colunas: Produto, Receita_Bruta, CMV, Qtde_Vendida, Margem_Bruta"
+        )
+
+    has_data = use_local or (uploaded_file is not None)
+
+    if has_data:
         st.markdown("---")
 
         # Navegacao
@@ -451,8 +478,9 @@ with st.sidebar:
 # ============================================================
 # LOGICA PRINCIPAL
 # ============================================================
-if uploaded_file is not None:
-    df = process_data(uploaded_file)
+if has_data:
+    data_source = SAMPLE_FILE if use_local else uploaded_file
+    df = process_data(data_source)
 
     if df.empty:
         st.error("Nao foi possivel carregar os dados. Verifique o formato do arquivo.")
