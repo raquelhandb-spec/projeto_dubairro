@@ -11,12 +11,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. ESTILO VISUAL (Fundo Branco) ---
+# --- 2. ESTILO VISUAL (Fundo Branco e Ajustes) ---
 st.markdown("""
     <style>
         .stApp { background-color: #FFFFFF; }
         .stApp, .stMarkdown, p, h1, h2, h3 { color: #000000 !important; }
         [data-testid="stMetricValue"] { font-size: 24px; }
+        div[data-testid="stExpander"] details summary p { color: #000000 !important; font-weight: bold; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -33,26 +34,25 @@ with col1:
 
 with col2:
     st.markdown("# Gestão | Mercado duBairro")
-    st.markdown("**Painel Estratégico**")
+    st.markdown("**Painel Estratégico dos Sócios**")
 
-# --- 5. SIDEBAR E UPLOAD ---
+# --- 5. BARRA LATERAL (UPLOAD) ---
 with st.sidebar:
     st.header("⚙️ Controle")
     uploaded_file = st.file_uploader("Suba a Base_PowerBI.xlsx", type=["xlsx"])
-    st.info("💡 Use o arquivo gerado pelo script 'processar_dados_mercado.py'")
+    
+    st.markdown("---")
+    st.info("💡 Importante: Use o arquivo 'Base_PowerBI.xlsx' gerado pelo novo script de processamento.")
 
 # --- 6. LÓGICA PRINCIPAL ---
 if uploaded_file:
     try:
-        # LENDO AS ABAS DA NOVA PLANILHA
-        # dim_produtos: contém os dados detalhados por item
+        # Tenta ler a aba correta da nova planilha
         df_prod = pd.read_excel(uploaded_file, sheet_name='dim_produtos')
         
-        # CÁLCULOS (Recalculando totais para garantir precisão)
+        # CÁLCULOS
         fat_total = df_prod['Receita_Total'].sum()
         lucro_bruto = df_prod['Lucro_Total'].sum()
-        
-        # Lucro Líquido = Bruto - Custo Fixo
         lucro_liq = lucro_bruto - CUSTO_FIXO_REAL
         
         # Margens
@@ -62,7 +62,7 @@ if uploaded_file:
         # Ponto de Equilíbrio
         peq = CUSTO_FIXO_REAL / margem_bruta if margem_bruta > 0 else 0
 
-        # --- EXIBIÇÃO DOS KPIS ---
+        # --- EXIBIÇÃO DOS INDICADORES (KPIs) ---
         st.markdown("### 📈 Resumo do Mês")
         k1, k2, k3, k4 = st.columns(4)
         
@@ -73,10 +73,10 @@ if uploaded_file:
         
         st.markdown("---")
 
-        # --- GRÁFICO TOP PRODUTOS ---
+        # --- GRÁFICO: TOP 15 PRODUTOS ---
         st.subheader("🏆 Top 15 Produtos (Faturamento)")
         
-        # Pegando os campeões
+        # Ordenar e pegar os 15 primeiros
         top_produtos = df_prod.sort_values('Receita_Total', ascending=False).head(15)
         
         fig = px.bar(
@@ -84,11 +84,11 @@ if uploaded_file:
             x='Produto', 
             y='Receita_Total',
             text='Receita_Total',
-            title="Produtos que mais trouxeram dinheiro",
+            title="Campeões de Venda",
             color_discrete_sequence=['#FBC02D'] # Amarelo Ouro
         )
         
-        # Ajuste visual fino
+        # Ajuste visual do gráfico para fundo branco
         fig.update_traces(texttemplate='R$ %{text:.2s}', textposition='outside')
         fig.update_layout(
             plot_bgcolor="white",
@@ -100,18 +100,16 @@ if uploaded_file:
         )
         st.plotly_chart(fig, use_container_width=True)
         
-        # --- TABELA DE CURVA A ---
-        with st.expander("🔍 Ver Detalhes da Curva A"):
-            # Filtrar apenas Curva A
-            df_curva_a = df_prod[df_prod['Curva'] == 'A'][['Produto', 'Receita_Total', 'Lucro_Total', 'Margem_Media']]
-            st.dataframe(df_curva_a.style.format({
-                'Receita_Total': 'R$ {:,.2f}',
-                'Lucro_Total': 'R$ {:,.2f}',
-                'Margem_Media': '{:.1f}%'
-            }))
+        # --- TABELA: DETALHES TÉCNICOS ---
+        with st.expander("🔍 Ver Tabela Completa (Curva A, B e C)"):
+            st.dataframe(df_prod[['Produto', 'Curva', 'Receita_Total', 'Lucro_Total', 'Margem_Media']])
 
+    except ValueError as e:
+        # Se der erro de aba não encontrada, avisa o usuário
+        st.error("❌ Erro de Leitura: A aba 'dim_produtos' não foi encontrada.")
+        st.warning("Parece que você está subindo uma planilha antiga. Certifique-se de rodar o script 'processar_dados_mercado.py' primeiro.")
     except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-        st.warning("Certifique-se de que está subindo o arquivo 'Base_PowerBI.xlsx' correto.")
+        st.error(f"Ocorreu um erro inesperado: {e}")
+
 else:
-    st.info("👋 Olá! Faça o upload da planilha 'Base_PowerBI.xlsx' para ver os dados.")
+    st.info("👋 Olá! Aguardando o upload da planilha...")
