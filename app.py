@@ -5,13 +5,13 @@ import os
 
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
-    page_title="duBairro | Gestão", 
+    page_title="duBairro | Gestão",
     layout="wide",
     page_icon="🛒",
     initial_sidebar_state="expanded"
 )
 
-# --- 2. ESTILO VISUAL (Fundo Branco e Ajustes) ---
+# --- 2. ESTILO VISUAL (Fundo Branco) ---
 st.markdown("""
     <style>
         .stApp { background-color: #FFFFFF; }
@@ -42,12 +42,12 @@ with st.sidebar:
     uploaded_file = st.file_uploader("Suba a Base_PowerBI.xlsx", type=["xlsx"])
     
     st.markdown("---")
-    st.info("💡 Importante: Use o arquivo 'Base_PowerBI.xlsx' gerado pelo novo script de processamento.")
+    st.info("💡 Importante: Use o arquivo 'Base_PowerBI.xlsx' gerado pelo novo script.")
 
 # --- 6. LÓGICA PRINCIPAL ---
 if uploaded_file:
     try:
-        # Tenta ler a aba correta da nova planilha
+        # AQUI ESTÁ A CORREÇÃO: Lê a aba 'dim_produtos' em vez de 'DadosVendas'
         df_prod = pd.read_excel(uploaded_file, sheet_name='dim_produtos')
         
         # CÁLCULOS
@@ -67,7 +67,7 @@ if uploaded_file:
         k1, k2, k3, k4 = st.columns(4)
         
         k1.metric("Faturamento", f"R$ {fat_total:,.2f}")
-        k2.metric("Lucro Líquido", f"R$ {lucro_liq:,.2f}", delta_color="normal")
+        k2.metric("Lucro Líquido", f"R$ {lucro_liq:,.2f}")
         k3.metric("Margem Real", f"{margem_real*100:.1f}%", "Meta: 15%")
         k4.metric("Ponto de Equilíbrio", f"R$ {peq:,.0f}")
         
@@ -76,7 +76,6 @@ if uploaded_file:
         # --- GRÁFICO: TOP 15 PRODUTOS ---
         st.subheader("🏆 Top 15 Produtos (Faturamento)")
         
-        # Ordenar e pegar os 15 primeiros
         top_produtos = df_prod.sort_values('Receita_Total', ascending=False).head(15)
         
         fig = px.bar(
@@ -88,7 +87,6 @@ if uploaded_file:
             color_discrete_sequence=['#FBC02D'] # Amarelo Ouro
         )
         
-        # Ajuste visual do gráfico para fundo branco
         fig.update_traces(texttemplate='R$ %{text:.2s}', textposition='outside')
         fig.update_layout(
             plot_bgcolor="white",
@@ -100,16 +98,13 @@ if uploaded_file:
         )
         st.plotly_chart(fig, use_container_width=True)
         
-        # --- TABELA: DETALHES TÉCNICOS ---
-        with st.expander("🔍 Ver Tabela Completa (Curva A, B e C)"):
-            st.dataframe(df_prod[['Produto', 'Curva', 'Receita_Total', 'Lucro_Total', 'Margem_Media']])
+        # --- TABELA DETALHADA ---
+        with st.expander("🔍 Ver Detalhes dos Produtos"):
+            st.dataframe(df_prod[['Produto', 'Curva', 'Receita_Total', 'Lucro_Total']])
 
-    except ValueError as e:
-        # Se der erro de aba não encontrada, avisa o usuário
-        st.error("❌ Erro de Leitura: A aba 'dim_produtos' não foi encontrada.")
-        st.warning("Parece que você está subindo uma planilha antiga. Certifique-se de rodar o script 'processar_dados_mercado.py' primeiro.")
     except Exception as e:
-        st.error(f"Ocorreu um erro inesperado: {e}")
+        st.error(f"❌ Erro: {e}")
+        st.warning("Verifique se você está subindo o arquivo Base_PowerBI.xlsx correto.")
 
 else:
-    st.info("👋 Olá! Aguardando o upload da planilha...")
+    st.info("👋 Olá! Aguardando o upload da planilha Base_PowerBI.xlsx...")
