@@ -42,38 +42,73 @@ COLORS = {
 }
 
 # ============================================================
-# CSS CUSTOMIZADO
+# TEMA LIGHT / DARK
 # ============================================================
-st.markdown("""
+if 'tema' not in st.session_state:
+    st.session_state['tema'] = 'light'
+
+def get_theme():
+    """Retorna paleta de cores baseada no tema selecionado"""
+    if st.session_state['tema'] == 'dark':
+        return {
+            'bg': '#1A1A2E', 'bg_card': '#16213E', 'bg_sidebar': '#0F3460',
+            'text': '#E0E0E0', 'text_muted': '#A0A0A0', 'text_sub': '#888',
+            'border': '#2A2A4A', 'story_bg': '#1C2333', 'story_text': '#C0C0C0',
+            'plotly_bg': '#16213E', 'plotly_paper': '#1A1A2E', 'plotly_grid': '#2A2A4A',
+            'plotly_text': '#E0E0E0',
+        }
+    else:
+        return {
+            'bg': '#FAFAFA', 'bg_card': '#FFFFFF', 'bg_sidebar': '#2D2D2D',
+            'text': '#2D2D2D', 'text_muted': '#666666', 'text_sub': '#999',
+            'border': '#E0E0E0', 'story_bg': '#FFF9E6', 'story_text': '#555',
+            'plotly_bg': 'white', 'plotly_paper': 'white', 'plotly_grid': '#EEE',
+            'plotly_text': '#2D2D2D',
+        }
+
+def apply_css():
+    """Aplica CSS dinâmico baseado no tema"""
+    t = get_theme()
+    st.markdown(f"""
 <style>
-    .stApp { background-color: #FAFAFA; }
-    [data-testid="stSidebar"] { background-color: #2D2D2D; }
-    [data-testid="stSidebar"] * { color: #FFFFFF !important; }
-    [data-testid="stSidebar"] .stRadio label { color: #FFFFFF !important; font-size: 14px; }
-    .kpi-card {
-        background: white; border-radius: 12px; padding: 20px 24px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 4px solid #FFC107; margin-bottom: 8px;
-    }
-    .kpi-title { font-size: 13px; color: #666; margin-bottom: 4px; font-weight: 500; }
-    .kpi-value { font-size: 28px; font-weight: 700; color: #2D2D2D; line-height: 1.2; }
-    .kpi-subtitle { font-size: 11px; color: #999; margin-top: 4px; }
-    .kpi-positive { color: #27AE60; }
-    .kpi-negative { color: #E74C3C; }
-    .kpi-neutral { color: #F39C12; }
-    .story-box {
-        background: #FFF9E6; border-left: 3px solid #FFC107;
-        padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 8px 0 16px 0; font-size: 13px; color: #555;
-    }
-    .section-header {
-        font-size: 18px; font-weight: 600; color: #2D2D2D;
+    .stApp {{ background-color: {t['bg']}; }}
+    [data-testid="stSidebar"] {{ background-color: {t['bg_sidebar']}; }}
+    [data-testid="stSidebar"] * {{ color: #FFFFFF !important; }}
+    [data-testid="stSidebar"] .stRadio label {{ color: #FFFFFF !important; font-size: 14px; }}
+    .kpi-card {{
+        background: {t['bg_card']}; border-radius: 12px; padding: 20px 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #FFC107; margin-bottom: 8px;
+    }}
+    .kpi-title {{ font-size: 13px; color: {t['text_muted']}; margin-bottom: 4px; font-weight: 500; }}
+    .kpi-value {{ font-size: 28px; font-weight: 700; color: {t['text']}; line-height: 1.2; }}
+    .kpi-subtitle {{ font-size: 11px; color: {t['text_sub']}; margin-top: 4px; }}
+    .kpi-positive {{ color: #27AE60; }}
+    .kpi-negative {{ color: #E74C3C; }}
+    .kpi-neutral {{ color: #F39C12; }}
+    .story-box {{
+        background: {t['story_bg']}; border-left: 3px solid #FFC107;
+        padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 8px 0 16px 0;
+        font-size: 13px; color: {t['story_text']};
+    }}
+    .section-header {{
+        font-size: 18px; font-weight: 600; color: {t['text']};
         border-bottom: 2px solid #FFC107; padding-bottom: 6px; margin: 24px 0 12px 0;
-    }
-    .periodo-badge {
+    }}
+    .periodo-badge {{
         background: #FFC107; color: #2D2D2D; padding: 4px 12px;
         border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; margin-bottom: 8px;
-    }
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;}
-    [data-testid="stMetricDelta"] { font-size: 14px; }
+    }}
+    /* Texto geral para dark mode */
+    .stMarkdown, .stMarkdown p, .stCaption {{ color: {t['text']} !important; }}
+    h1, h2, h3, h4, h5, h6 {{ color: {t['text']} !important; }}
+    /* Expander */
+    .streamlit-expanderHeader {{ color: {t['text']} !important; }}
+    /* Dataframe */
+    .stDataFrame {{ color: {t['text']}; }}
+    /* Tabs */
+    .stTabs [data-baseweb="tab"] {{ color: {t['text_muted']}; }}
+    #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}}
+    [data-testid="stMetricDelta"] {{ font-size: 14px; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -140,6 +175,14 @@ def render_tooltip(title, what, how, why, example=""):
         st.markdown(f"**O que mostra:** {what}\n\n**Como ler:** {how}\n\n**Por que importa:** {why}")
         if example:
             st.markdown(f"**Exemplo prático:** {example}")
+
+def plotly_theme():
+    """Retorna dict de layout para Plotly compatível com o tema"""
+    t = get_theme()
+    return dict(plot_bgcolor=t['plotly_bg'], paper_bgcolor=t['plotly_paper'],
+                font_color=t['plotly_text'],
+                xaxis=dict(gridcolor=t['plotly_grid']),
+                yaxis=dict(gridcolor=t['plotly_grid']))
 
 
 # ============================================================
@@ -211,7 +254,7 @@ def page_resumo_executivo(data):
             if not d26.empty: fig.add_trace(go.Bar(x=d26['Mês'], y=d26['Receita'], name='Fat. 2026', marker_color=COLORS['yellow'], text=[f"R${v/1000:.0f}k" for v in d26['Receita']], textposition='outside', textfont_size=9))
             fig.add_trace(go.Scatter(x=d25['Mês'], y=d25['Lucro'], name='Lucro 2025', line=dict(color=COLORS['green'], width=2, dash='dot'), mode='lines+markers'), secondary_y=True)
             if not d26.empty: fig.add_trace(go.Scatter(x=d26['Mês'], y=d26['Lucro'], name='Lucro 2026', line=dict(color=COLORS['green_dark'], width=3), mode='lines+markers'), secondary_y=True)
-            fig.update_layout(barmode='group', height=380, margin=dict(l=20,r=20,t=30,b=20), legend=dict(orientation="h",y=-0.15), plot_bgcolor='white', yaxis_title="Faturamento (R$)")
+            fig.update_layout(barmode='group', height=380, margin=dict(l=20,r=20,t=30,b=20), legend=dict(orientation="h",y=-0.15), plot_bgcolor=get_theme()['plotly_bg'], yaxis_title="Faturamento (R$)")
             fig.update_yaxes(title_text="Lucro (R$)", secondary_y=True)
             st.plotly_chart(fig, use_container_width=True)
         render_tooltip("Evolução Mensal 2025 vs 2026", "Barras cinzas = 2025. Barras amarelas = 2026. Linhas = lucro.", "Compare cada mês lado a lado.", "Identifica tendências de crescimento ou queda.", f"Se {mes_nome}/26 (amarelo) está menor que {mes_nome}/25 (cinza), o faturamento caiu.")
@@ -236,7 +279,7 @@ def page_resumo_executivo(data):
     fig_top = go.Figure()
     fig_top.add_trace(go.Bar(y=top10['Produto'], x=top10['Custo'], name='Custo', orientation='h', marker_color='#D5DBDB'))
     fig_top.add_trace(go.Bar(y=top10['Produto'], x=top10['Lucro_Total'], name='Lucro', orientation='h', marker_color=COLORS['green'], text=[f"R$ {v:,.0f}" for v in top10['Lucro_Total']], textposition='outside', textfont_size=10))
-    fig_top.update_layout(barmode='stack', height=350, margin=dict(l=10,r=80,t=10,b=10), legend=dict(orientation="h",y=-0.1), plot_bgcolor='white', yaxis=dict(autorange="reversed"), xaxis_title="R$")
+    fig_top.update_layout(barmode='stack', height=350, margin=dict(l=10,r=80,t=10,b=10), legend=dict(orientation="h",y=-0.1), plot_bgcolor=get_theme()['plotly_bg'], yaxis=dict(autorange="reversed"), xaxis_title="R$")
     st.plotly_chart(fig_top, use_container_width=True)
     lt = top10['Lucro_Total'].sum(); ltot = produtos['Lucro_Total'].sum(); pct = safe_div(lt, ltot) * 100
     render_tooltip("Top 10 por Lucro", "Os 10 produtos mais lucrativos. Cinza = custo, verde = lucro.", "Quanto mais verde, melhor a margem.", "Proteger estoque e preço desses produtos a todo custo.", f"Juntos representam {pct:.0f}% do lucro total.")
@@ -276,7 +319,7 @@ def page_inteligencia_precos(data):
         ar = cap['Receita_Total'].mean()
         fig.add_hline(y=mdm, line_dash="dash", line_color="#999", annotation_text=f"Margem: {mdm:.0f}%")
         fig.add_vline(x=ar, line_dash="dash", line_color="#999", annotation_text=f"Receita: R${ar:.0f}")
-        fig.update_layout(height=450, plot_bgcolor='white', margin=dict(l=20,r=20,t=30,b=20), xaxis_title="Faturamento (R$)", yaxis_title="Margem (%)", legend=dict(orientation="h",y=-0.15))
+        fig.update_layout(height=450, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=20,r=20,t=30,b=20), xaxis_title="Faturamento (R$)", yaxis_title="Margem (%)", legend=dict(orientation="h",y=-0.15))
         st.plotly_chart(fig, use_container_width=True)
         render_tooltip("Scatter Plot de Preços", "Cada bolha = produto Curva A. X = faturamento. Y = margem. Tamanho = lucro.", "Superior direito = melhor. Inferior direito = vende mas não lucra.", "Identifica onde reajustar preço.", "Produto com alto faturamento e margem 15% precisa de reajuste.")
 
@@ -343,7 +386,7 @@ def page_mapa_produtos(data):
     fig.add_annotation(x=0.85,y=15,text="💰 GERADORES",showarrow=False,font=dict(size=12,color=COLORS['orange']))
     fig.add_annotation(x=0.15,y=85,text="🔍 OPORTUNIDADES",showarrow=False,font=dict(size=12,color=COLORS['blue']))
     fig.add_annotation(x=0.15,y=15,text="⚠️ PESO MORTO",showarrow=False,font=dict(size=12,color=COLORS['red']))
-    fig.update_layout(height=500, plot_bgcolor='white', margin=dict(l=20,r=20,t=30,b=20), xaxis_title="Giro (% dias com venda)", yaxis_title="Margem (%)", xaxis=dict(range=[-0.05,1.05], tickformat='.0%'), legend=dict(orientation="h",y=-0.12))
+    fig.update_layout(height=500, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=20,r=20,t=30,b=20), xaxis_title="Giro (% dias com venda)", yaxis_title="Margem (%)", xaxis=dict(range=[-0.05,1.05], tickformat='.0%'), legend=dict(orientation="h",y=-0.12))
     st.plotly_chart(fig, use_container_width=True)
     render_tooltip("Scatter Plot Giro vs Margem", "Cada bolha = produto. X = giro. Y = margem. Tamanho = faturamento.", "Superior direito = ⭐. Inferior direito = 💰. Passe o mouse para ver detalhes.", "Ferramenta principal para decisões de mix.")
 
@@ -406,7 +449,7 @@ def page_diagnostico(data):
         render_section(f"Contribuição por Categoria ({mes_nome}/26)")
         vw = vm[['Categoria','Vlr_Venda','Vlr_Lucro']].sort_values('Vlr_Venda', ascending=False).head(12)
         fig = go.Figure(go.Bar(x=vw['Categoria'], y=vw['Vlr_Venda'], marker_color=[COLORS['green'] if l>0 else COLORS['red'] for l in vw['Vlr_Lucro']], text=[f"R${v:,.0f}" for v in vw['Vlr_Venda']], textposition='outside', textfont_size=9))
-        fig.update_layout(height=380, plot_bgcolor='white', margin=dict(l=10,r=10,t=10,b=80), xaxis_tickangle=-45, yaxis_title="Faturamento (R$)")
+        fig.update_layout(height=380, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=10,r=10,t=10,b=80), xaxis_tickangle=-45, yaxis_title="Faturamento (R$)")
         st.plotly_chart(fig, use_container_width=True)
         render_tooltip("Contribuição por Categoria", "Top 12 categorias. Verde = lucro positivo.", "Barras mais altas = mais faturamento.", "Identifica motores do faturamento.")
 
@@ -428,7 +471,7 @@ def page_diagnostico(data):
     da['FM'] = da['FT'] / da['D']
     da['DSP'] = pd.Categorical(da['DSP'], categories=do, ordered=True); da = da.sort_values('DSP')
     fig = go.Figure(go.Bar(x=da['DSP'], y=da['FM'], marker_color=[COLORS['yellow'] if d!='Domingo' else COLORS['red'] for d in da['DSP']], text=[f"R$ {v:,.0f}" for v in da['FM']], textposition='outside'))
-    fig.update_layout(height=280, plot_bgcolor='white', margin=dict(l=10,r=10,t=10,b=10), yaxis_title="Fat. Médio (R$)")
+    fig.update_layout(height=280, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=10,r=10,t=10,b=10), yaxis_title="Fat. Médio (R$)")
     st.plotly_chart(fig, use_container_width=True)
     bd = da.loc[da['FM'].idxmax(),'DSP'] if not da.empty else "N/A"; wd = da.loc[da['FM'].idxmin(),'DSP'] if not da.empty else "N/A"
     render_tooltip("Faturamento por Dia da Semana", f"Média diária em {mes_nome}/26. Domingo em vermelho.", "Barras altas = dias fortes. Use para planejar estoque.", "Promoções nos dias fracos, reforço nos fortes.")
@@ -467,7 +510,7 @@ def page_sazonalidade(data):
         r26 = yoy['Receita_2026'].tolist(); ml26 = [MESES_LABELS[i] for i,v in enumerate(r26) if v>0]; rv26 = [v for v in r26 if v>0]
         if rv26: fig.add_trace(go.Scatter(x=ml26, y=rv26, name='2026 (real)', mode='lines+markers+text', line=dict(color=COLORS['yellow'],width=3), marker=dict(size=12,symbol='diamond'), text=[f"R${v/1000:.0f}k" for v in rv26], textposition='bottom center', textfont_size=10))
         fig.add_hline(y=fmm25, line_dash="dot", line_color="#CCC", annotation_text=f"Média 2025: R${fmm25/1000:.0f}k")
-        fig.update_layout(height=400, plot_bgcolor='white', margin=dict(l=20,r=20,t=30,b=20), yaxis_title="Faturamento (R$)", legend=dict(orientation="h",y=-0.1))
+        fig.update_layout(height=400, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=20,r=20,t=30,b=20), yaxis_title="Faturamento (R$)", legend=dict(orientation="h",y=-0.1))
         st.plotly_chart(fig, use_container_width=True)
         render_tooltip("Sazonalidade 2025 vs 2026", "Cinza = 2025. Losangos amarelos = 2026 real. Linha pontilhada = média 2025.", "Compare o losango de 2026 com o ponto do MESMO mês de 2025.", "2025 mostra o padrão. Se Março/25 foi pico, espere algo similar em 2026.")
 
@@ -476,7 +519,7 @@ def page_sazonalidade(data):
         ys = yoy.copy(); ys['Idx'] = ys['Receita_2025'].apply(lambda x: safe_div(x, fmm25))
         fig = go.Figure(go.Bar(x=MESES_LABELS, y=ys['Idx'], marker_color=[COLORS['green'] if v>1 else COLORS['red'] for v in ys['Idx']], text=[f"{v:.2f}" for v in ys['Idx']], textposition='outside', textfont_size=10))
         fig.add_hline(y=1, line_dash="solid", line_color="#999", line_width=2)
-        fig.update_layout(height=400, plot_bgcolor='white', margin=dict(l=20,r=20,t=30,b=20), yaxis_title="Índice (1.00 = média)")
+        fig.update_layout(height=400, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=20,r=20,t=30,b=20), yaxis_title="Índice (1.00 = média)")
         st.plotly_chart(fig, use_container_width=True)
         render_tooltip("Índice de Sazonalidade", "Cada barra = faturamento do mês ÷ média anual de 2025. 1.00 = exatamente na média.", "Verde (>1.00) = mês forte. Vermelho (<1.00) = mês fraco. Ex: 1.15 = 15% acima da média.", "Prever meses fortes e fracos de 2026.", f"Média 2025: R$ {fmm25:,.0f}. Índice 1.20 = ~R$ {fmm25*1.2:,.0f}.")
 
@@ -484,7 +527,7 @@ def page_sazonalidade(data):
     sp = yoy[['Mes','SKUs_2025']].copy(); sp = sp[sp['SKUs_2025']>0]
     if not sp.empty:
         fig = go.Figure(go.Scatter(x=sp['Mes'], y=sp['SKUs_2025'], mode='lines+markers+text', line=dict(color=COLORS['blue'],width=2), marker=dict(size=10), text=sp['SKUs_2025'].astype(int).astype(str), textposition='top center'))
-        fig.update_layout(height=280, plot_bgcolor='white', margin=dict(l=20,r=20,t=30,b=20), yaxis_title="Nº SKUs")
+        fig.update_layout(height=280, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=20,r=20,t=30,b=20), yaxis_title="Nº SKUs")
         st.plotly_chart(fig, use_container_width=True)
         p1=sp.iloc[0]['SKUs_2025']; u1=sp.iloc[-1]['SKUs_2025']
         render_tooltip("Evolução do Mix", f"SKUs vendidos por mês em 2025.", "Linha descendo = menos variedade.", "Menos produtos = menos motivos para o cliente.", f"De {int(p1)} para {int(u1)} ({int(u1-p1)}).")
@@ -500,7 +543,7 @@ def page_sazonalidade(data):
             rol.append(sum(ra[max(0,i-11):i+1]))
             lbl.append((MESES_LABELS[i]+'/25') if i < 12 else (MESES_LABELS[i-12]+'/26'))
         fig = go.Figure(go.Scatter(x=lbl, y=rol, mode='lines+markers', line=dict(color=COLORS['blue'],width=3), fill='tozeroy', fillcolor='rgba(46,134,193,0.1)'))
-        fig.update_layout(height=280, plot_bgcolor='white', margin=dict(l=20,r=20,t=30,b=20), yaxis_title="Fat. Acum. 12m (R$)")
+        fig.update_layout(height=280, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=20,r=20,t=30,b=20), yaxis_title="Fat. Acum. 12m (R$)")
         st.plotly_chart(fig, use_container_width=True)
         render_tooltip("12 Meses Móveis", "Soma dos últimos 12 meses em cada ponto. Elimina sazonalidade.", "Subindo = negócio crescendo. Descendo = encolhendo.", "Melhor indicador de tendência real.")
         if len(rol)>1:
@@ -545,7 +588,7 @@ def page_visao_futurista(data):
     if not dr.empty: fig.add_trace(go.Bar(x=dr['Lbl'], y=dr['R26'], name='2026 (real)', marker_color=COLORS['yellow'], text=[f"R${v/1000:.0f}k" for v in dr['R26']], textposition='outside'))
     df = dp[(dp['R26']==0) & (dp['Proj']>0)]
     if not df.empty: fig.add_trace(go.Bar(x=df['Lbl'], y=df['Proj'], name='2026 (projeção)', marker_color='rgba(255,193,7,0.4)', text=[f"R${v/1000:.0f}k" for v in df['Proj']], textposition='outside', marker_line=dict(color=COLORS['yellow'],width=2)))
-    fig.update_layout(height=400, plot_bgcolor='white', margin=dict(l=20,r=20,t=30,b=20), legend=dict(orientation="h",y=-0.1), yaxis_title="Faturamento (R$)", barmode='overlay')
+    fig.update_layout(height=400, plot_bgcolor=get_theme()['plotly_bg'], margin=dict(l=20,r=20,t=30,b=20), legend=dict(orientation="h",y=-0.1), yaxis_title="Faturamento (R$)", barmode='overlay')
     st.plotly_chart(fig, use_container_width=True)
     render_tooltip("Projeção 2026", "Amarelo sólido = real. Amarelo transparente = projeção sazonal. Cinza = 2025.", f"Fator de ajuste: {fa:.2f} (2026 está a {(fa-1)*100:+.1f}% de 2025).", "Antecipar faturamento para planejar compras e caixa.")
     st.markdown("---")
@@ -659,12 +702,22 @@ def main():
             st.caption(f"⚡ Simulando com R$ {custo_fixo_input:,.2f}")
 
         st.markdown("---")
+        
+        # Toggle de tema
+        st.markdown("##### 🎨 Aparência")
+        tema_opcao = st.toggle("🌙 Modo Escuro", value=(st.session_state.get('tema','light')=='dark'))
+        st.session_state['tema'] = 'dark' if tema_opcao else 'light'
+        
+        st.markdown("---")
         st.markdown("##### ⚙️ Informações")
         st.markdown(f"**Custo Fixo:** R$ {custo_fixo_input:,.2f}")
         st.markdown(f"**Meta Líquida:** {META_LIQUIDA*100:.0f}%")
         st.markdown("---")
         st.caption("Mercado duBairro © 2026")
         st.caption("Dashboard de Gestão v2.0")
+
+    # Aplicar CSS do tema DEPOIS da sidebar (para pegar o valor do toggle)
+    apply_css()
 
     try:
         data = load_data()
