@@ -30,6 +30,26 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- INÍCIO DO ESTILO TESLA ---
+def aplicar_estilo_tesla():
+    st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+        .block-container { padding-top: 1rem; padding-bottom: 5rem; }
+        div[data-testid="stMetric"] {
+            background-color: #1A1A1A; border: 1px solid #333;
+            padding: 15px; border-radius: 6px; color: #fff; transition: border 0.3s;
+        }
+        div[data-testid="stMetric"]:hover { border: 1px solid #E31937; }
+        div[data-testid="stMetricLabel"] p { font-size: 0.9rem !important; color: #8E8E93 !important; }
+        div[data-testid="stMetricValue"] div { font-size: 2rem !important; font-weight: 300 !important; color: #FFFFFF !important; }
+        #MainMenu {visibility: hidden;} header {visibility: hidden;}
+        </style>
+    """, unsafe_allow_html=True)
+aplicar_estilo_tesla()
+# --- FIM DO ESTILO TESLA ---
+
 # --- INÍCIO DO ESTILO TESLA (CSS) ---
 def aplicar_estilo_tesla():
     st.markdown("""
