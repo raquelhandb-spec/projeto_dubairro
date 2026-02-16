@@ -1,5 +1,5 @@
 [theme]
-primaryColor = "#E31937"          # Vermelho Tesla (Botões e Sliders)
+primaryColor = "#FFC107"          # Amarelo (Botões e Sliders)
 backgroundColor = "#0A0A0A"       # Preto Profundo (Fundo da página)
 secondaryBackgroundColor = "#1A1A1A" # Cinza Escuro (Barra lateral e Cards)
 textColor = "#E0E0E0"             # Branco Suave (Texto para não cansar a vista)
