@@ -1,14 +1,9 @@
 [theme]
-primaryColor = "#FFC107"
-backgroundColor = "#FAFAFA"
-secondaryBackgroundColor = "#F5F5F5"
-textColor = "#2D2D2D"
-font = "sans serif"
+primaryColor = "#E31937"          # Vermelho Tesla (Botões e Sliders)
+backgroundColor = "#0A0A0A"       # Preto Profundo (Fundo da página)
+secondaryBackgroundColor = "#1A1A1A" # Cinza Escuro (Barra lateral e Cards)
+textColor = "#E0E0E0"             # Branco Suave (Texto para não cansar a vista)
+font = "sans serif"               # Fonte Limpa
 
 [server]
-headless = true
-address = "0.0.0.0"
-port = 8501
-
-[browser]
-gatherUsageStats = false
+runOnSave = true
