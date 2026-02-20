@@ -633,6 +633,171 @@ def page_visao_futurista(data):
 
 
 # ============================================================
+# PÁGINA 7: UPLOAD DE DADOS
+# ============================================================
+def page_upload_dados():
+    st.markdown("## 📤 Upload de Dados")
+    st.markdown("*Insira dados diretamente através de upload de arquivo Excel*")
+    st.markdown("---")
+
+    # Abas para diferentes tipos de upload
+    tab1, tab2, tab3 = st.tabs(["📊 Vendas Mensais", "📈 Vendas Diárias", "📦 Produtos"])
+
+    with tab1:
+        st.subheader("Upload: Vendas Mensais")
+        st.markdown("**Formato esperado:**")
+        st.markdown("""
+        | Categoria | Vlr_Venda | Vlr_Lucro | Qtde_Documentos | Markdown_Pct |
+        |-----------|-----------|-----------|-----------------|--------------|
+        | Alimentos | 1000      | 150       | 25              | 15           |
+        """)
+
+        uploaded_file = st.file_uploader("Escolha um arquivo Excel", type=['xlsx', 'xls'], key="vendas_mensais")
+
+        if uploaded_file is not None:
+            try:
+                df_upload = pd.read_excel(uploaded_file, sheet_name=0)
+                st.success("✅ Arquivo carregado com sucesso!")
+
+                # Visualizar dados
+                st.markdown("**Prévia dos dados:**")
+                st.dataframe(df_upload.head(10), use_container_width=True)
+
+                # Validação de colunas
+                colunas_esperadas = ['Categoria', 'Vlr_Venda', 'Vlr_Lucro', 'Qtde_Documentos', 'Markdown_Pct']
+                colunas_presentes = [col for col in colunas_esperadas if col in df_upload.columns]
+                colunas_faltando = [col for col in colunas_esperadas if col not in df_upload.columns]
+
+                if colunas_faltando:
+                    st.warning(f"⚠️ Colunas faltando: {', '.join(colunas_faltando)}")
+                else:
+                    st.success("✅ Todas as colunas obrigatórias estão presentes!")
+
+                # Resumo dos dados
+                st.markdown("**Resumo estatístico:**")
+                st.dataframe(df_upload.describe(), use_container_width=True)
+
+                # Botão para salvar
+                if st.button("💾 Salvar Dados", key="salvar_vendas_mensais"):
+                    timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+                    arquivo_saida = f"dados_upload_vendas_mensais_{timestamp}.xlsx"
+
+                    with pd.ExcelWriter(arquivo_saida, engine='openpyxl') as writer:
+                        df_upload.to_excel(writer, sheet_name='vendas_mensais', index=False)
+
+                    st.success(f"✅ Dados salvos em: **{arquivo_saida}**")
+                    st.balloons()
+
+            except Exception as e:
+                st.error(f"❌ Erro ao processar arquivo: {str(e)}")
+
+    with tab2:
+        st.subheader("Upload: Vendas Diárias")
+        st.markdown("**Formato esperado:**")
+        st.markdown("""
+        | Data | Categoria | Vlr_Venda | Vlr_Lucro |
+        |------|-----------|-----------|-----------|
+        | 2026-01-15 | Alimentos | 500 | 75 |
+        """)
+
+        uploaded_file = st.file_uploader("Escolha um arquivo Excel", type=['xlsx', 'xls'], key="vendas_diarias")
+
+        if uploaded_file is not None:
+            try:
+                df_upload = pd.read_excel(uploaded_file, sheet_name=0)
+                st.success("✅ Arquivo carregado com sucesso!")
+
+                # Converter coluna Data para datetime se necessário
+                if 'Data' in df_upload.columns:
+                    df_upload['Data'] = pd.to_datetime(df_upload['Data'])
+
+                st.markdown("**Prévia dos dados:**")
+                st.dataframe(df_upload.head(10), use_container_width=True)
+
+                # Validação
+                colunas_esperadas = ['Data', 'Categoria', 'Vlr_Venda', 'Vlr_Lucro']
+                colunas_presentes = [col for col in colunas_esperadas if col in df_upload.columns]
+                colunas_faltando = [col for col in colunas_esperadas if col not in df_upload.columns]
+
+                if colunas_faltando:
+                    st.warning(f"⚠️ Colunas faltando: {', '.join(colunas_faltando)}")
+                else:
+                    st.success("✅ Todas as colunas obrigatórias estão presentes!")
+
+                st.markdown("**Resumo estatístico:**")
+                st.dataframe(df_upload.describe(), use_container_width=True)
+
+                if st.button("💾 Salvar Dados", key="salvar_vendas_diarias"):
+                    timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+                    arquivo_saida = f"dados_upload_vendas_diarias_{timestamp}.xlsx"
+
+                    with pd.ExcelWriter(arquivo_saida, engine='openpyxl') as writer:
+                        df_upload.to_excel(writer, sheet_name='vendas_diarias', index=False)
+
+                    st.success(f"✅ Dados salvos em: **{arquivo_saida}**")
+                    st.balloons()
+
+            except Exception as e:
+                st.error(f"❌ Erro ao processar arquivo: {str(e)}")
+
+    with tab3:
+        st.subheader("Upload: Cadastro de Produtos")
+        st.markdown("**Formato esperado:**")
+        st.markdown("""
+        | Produto | Categoria | Receita_Total | Lucro_Total | Margem_Media |
+        |---------|-----------|---------------|-------------|--------------|
+        | Arroz 5kg | Alimentos | 2000 | 300 | 15 |
+        """)
+
+        uploaded_file = st.file_uploader("Escolha um arquivo Excel", type=['xlsx', 'xls'], key="produtos")
+
+        if uploaded_file is not None:
+            try:
+                df_upload = pd.read_excel(uploaded_file, sheet_name=0)
+                st.success("✅ Arquivo carregado com sucesso!")
+
+                st.markdown("**Prévia dos dados:**")
+                st.dataframe(df_upload.head(10), use_container_width=True)
+
+                # Validação
+                colunas_esperadas = ['Produto', 'Categoria', 'Receita_Total', 'Lucro_Total', 'Margem_Media']
+                colunas_presentes = [col for col in colunas_esperadas if col in df_upload.columns]
+                colunas_faltando = [col for col in colunas_esperadas if col not in df_upload.columns]
+
+                if colunas_faltando:
+                    st.warning(f"⚠️ Colunas faltando: {', '.join(colunas_faltando)}")
+                else:
+                    st.success("✅ Todas as colunas obrigatórias estão presentes!")
+
+                st.markdown("**Resumo estatístico:**")
+                st.dataframe(df_upload.describe(), use_container_width=True)
+
+                # Estatísticas adicionais
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Total de Produtos", len(df_upload))
+                with col2:
+                    st.metric("Receita Total", f"R$ {df_upload['Receita_Total'].sum():,.2f}")
+                with col3:
+                    st.metric("Lucro Total", f"R$ {df_upload['Lucro_Total'].sum():,.2f}")
+
+                if st.button("💾 Salvar Dados", key="salvar_produtos"):
+                    timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+                    arquivo_saida = f"dados_upload_produtos_{timestamp}.xlsx"
+
+                    with pd.ExcelWriter(arquivo_saida, engine='openpyxl') as writer:
+                        df_upload.to_excel(writer, sheet_name='produtos', index=False)
+
+                    st.success(f"✅ Dados salvos em: **{arquivo_saida}**")
+                    st.balloons()
+
+            except Exception as e:
+                st.error(f"❌ Erro ao processar arquivo: {str(e)}")
+
+    st.markdown("---")
+    st.info("💡 **Dica:** Os dados são salvos em arquivos separados com timestamp. Você pode verificar o histórico de uploads na pasta do projeto.")
+
+# ============================================================
 # SIDEBAR E NAVEGAÇÃO
 # ============================================================
 def main():
@@ -648,6 +813,7 @@ def main():
         pagina = st.radio("Navegação", [
             "📊 Resumo Executivo", "💰 Inteligência de Preços", "🗺️ Mapa de Produtos",
             "🔍 Diagnóstico de Faturamento", "📈 Sazonalidade e Tendências", "🔮 Visão Futurista",
+            "📤 Upload de Dados",
         ], label_visibility="collapsed")
 
         st.markdown("---")
@@ -681,6 +847,7 @@ def main():
     elif "Diagnóstico" in pagina: page_diagnostico(data)
     elif "Sazonalidade" in pagina: page_sazonalidade(data)
     elif "Futurista" in pagina: page_visao_futurista(data)
+    elif "Upload" in pagina: page_upload_dados()
 
 if __name__ == "__main__":
     main()
